@@ -2,41 +2,19 @@ const puppeteer = require('puppeteer');
 const cheerio = require('cheerio');
 const fs = require('fs');
 
+const keywords = require('./keywords.json');
 
-async function categorizeReview(reviewText) {
-    for (const category in keywords) {
-        const categoryKeywords = keywords[category];
-        if (categoryKeywords.some(keyword => reviewText.toLowerCase().includes(keyword))) {
-            return category;
-        }
-    }
-    return "uncategorized";
-}
+const lang = process.env.LANG
+console.log(lang);
+
 
 (async () => {
 
     let numberOfReviews = 0;
     const start = performance.now();
 
-    const browser = await puppeteer.launch({ headless: false, args: ['--lang="en-US"'] });
+    const browser = await puppeteer.launch({ headless: false });
     const page = await browser.newPage();
-
-    await page.setExtraHTTPHeaders({
-        'Accept-Language': 'en'
-    });
-
-    await page.evaluateOnNewDocument(() => {
-        Object.defineProperty(navigator, "language", {
-            get: function() {
-                return "en-GB";
-            }
-        });
-        Object.defineProperty(navigator, "languages", {
-            get: function() {
-                return ["en-GB", "en"];
-            }
-        });
-    });
 
     await page.goto('https://www.google.com/search?q=DK+Restaurant+NYC');
 
@@ -83,6 +61,14 @@ async function categorizeReview(reviewText) {
                 } else {
                     console.log("Aucun changement dans le bloc de reviews. Arrêt du défilement.");
 
+
+                    const moreButtons2 = await page.$$('.xfQgXd');
+                    for (const button of moreButtons2) {
+                        try {
+                            await button.click();
+                        } catch (error) {}
+                    }
+
                     const moreButtons = await page.$$('.review-more-link');
                     for (const button of moreButtons) {
                         try {
@@ -110,7 +96,109 @@ async function categorizeReview(reviewText) {
                                 }
                             }
 
-                            const category = await categorizeReview(reviewText);
+                            
+                            const keywords = {
+                                "organic": [
+                                    "pesticide",
+                                    "herbicide",
+                                    "toxic",
+                                    "non-toxic",
+                                    "regenerative",
+                                    "agroecology",
+                                    "biodynamic",
+                                    "biological",
+                                    "permaculture",
+                                    "holistic farming",
+                                    "sustainable soil",
+                                    "natural fertilizers",
+                                    "biodiversity-friendly"
+                                ],
+                                "climate": [
+                                    "plant-based",
+                                    "eco-conscious",
+                                    "wildlife-friendly",
+                                    "wildlife",
+                                    "carbon footprint",
+                                    "carbon offset",
+                                    "green energy",
+                                    "transportation",
+                                    "energy-efficient appliances",
+                                    "climate-positive",
+                                    "forestry"
+                                ],
+                                "water": [
+                                    "water",
+                                    "water quality",
+                                    "water efficiency",
+                                    "rainwater",
+                                    "watershed",
+                                    "wetland",
+                                    "irrigation",
+                                    "water recycling",
+                                    "eco-friendly water",
+                                    "pollution prevention",
+                                    "water stewardship"
+                                ],
+                                "social": [
+                                    "community empowerment",
+                                    "inclusive",
+                                    "supply chain",
+                                    "human rights",
+                                    "stakeholder",
+                                    "fair labor",
+                                    "social justice",
+                                    "social injustice",
+                                    "cultural diversity",
+                                    "consumer education",
+                                    "cultural"
+                                ],
+                                "governance": [
+                                    "ethical",
+                                    "corporate",
+                                    "corruption",
+                                    "stakeholder",
+                                    "lobbying",
+                                    "fair competition",
+                                    "transparent reporting",
+                                    "business innovation",
+                                    ""
+                                ],
+                                "waste": [
+                                    "packaging",
+                                    "life extension",
+                                    "cradle-to-cradle",
+                                    "closed-loop",
+                                    "waste",
+                                    "waste-to-energy",
+                                    "repurposing",
+                                    "landfill",
+                                    "green practices",
+                                    "sustainable packaging",
+                                    "waste auditing",
+                                    "environmental policy"
+                                ],
+                                "adverse": [
+                                    "greenwashing",
+                                    "eco-friendly",
+                                    "sustainability",
+                                    "environmental impact",
+                                    "ethical",
+                                    "certifications",
+                                    "green labels",
+                                    "labels",
+                                    "corporate",
+                                    "insincere"
+                                ]
+                            }
+
+                            let category = "uncategorized";
+                            
+                            for (const categoryK in keywords) {
+                                const categoryKeywords = keywords[categoryK];
+                                if (categoryKeywords.some(keyword => text.toLowerCase().includes(keyword))) {
+                                    category = categoryK;
+                                }
+                            }
                 
                             return {
                                 text,
