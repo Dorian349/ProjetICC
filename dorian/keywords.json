@@ -1,0 +1,93 @@
+{
+    "organic": [
+        "pesticide",
+        "herbicide",
+        "toxic",
+        "non-toxic",
+        "regenerative",
+        "agroecology",
+        "biodynamic",
+        "biological",
+        "permaculture",
+        "holistic farming",
+        "sustainable soil",
+        "natural fertilizers",
+        "biodiversity-friendly"
+    ],
+    "climate": [
+        "plant-based",
+        "eco-conscious",
+        "wildlife-friendly",
+        "wildlife",
+        "carbon footprint",
+        "carbon offset",
+        "green energy",
+        "transportation",
+        "energy-efficient appliances",
+        "climate-positive",
+        "forestry"
+    ],
+    "water": [
+        "water",
+        "water quality",
+        "water efficiency",
+        "rainwater",
+        "watershed",
+        "wetland",
+        "irrigation",
+        "water recycling",
+        "eco-friendly water",
+        "pollution prevention",
+        "water stewardship"
+    ],
+    "social": [
+        "community empowerment",
+        "inclusive",
+        "supply chain",
+        "human rights",
+        "stakeholder",
+        "fair labor",
+        "social justice",
+        "social injustice",
+        "cultural diversity",
+        "consumer education",
+        "cultural"
+    ],
+    "governance": [
+        "ethical",
+        "corporate",
+        "corruption",
+        "stakeholder",
+        "lobbying",
+        "fair competition",
+        "transparent reporting",
+        "business innovation",
+        ""
+    ],
+    "waste": [
+        "packaging",
+        "life extension",
+        "cradle-to-cradle",
+        "closed-loop",
+        "waste",
+        "waste-to-energy",
+        "repurposing",
+        "landfill",
+        "green practices",
+        "sustainable packaging",
+        "waste auditing",
+        "environmental policy"
+    ],
+    "adverse": [
+        "greenwashing",
+        "eco-friendly",
+        "sustainability",
+        "environmental impact",
+        "ethical",
+        "certifications",
+        "green labels",
+        "labels",
+        "corporate",
+        "insincere"
+    ]
+}

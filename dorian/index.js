@@ -3,50 +3,108 @@ const cheerio = require('cheerio');
 const fs = require('fs');
 
 (async () => {
-    const browser = await puppeteer.launch({ headless: false, slowMo: 100 });
+
+    let numberOfReviews = 0;
+    const start = performance.now();
+
+    const browser = await puppeteer.launch({ headless: false });
     const page = await browser.newPage();
 
-    await page.goto('https://www.google.com/search?q=le+Comptoir+%C3%94+Petit+Pau');
+    await page.goto('https://www.google.com/search?q=le+poulet+à+3+pattes+pau');
 
     const acceptButton = await page.$x("//button[contains(., 'Tout accepter')]");
 
     if (acceptButton.length > 0) {
-        // Cliquez sur le premier bouton trouvé
         await acceptButton[0].click();
         console.log("Bouton 'Tout accepter' cliqué avec succès.");
 
         const googleReviewsLink = await page.$x("//a[contains(., 'avis Google')]");
 
         if (googleReviewsLink.length > 0) {
-            // Cliquez sur le premier lien <a> trouvé
             await googleReviewsLink[0].click();
             console.log("Lien 'avis Google' cliqué avec succès.");
 
-            // Définir une fonction qui fait défiler la popup
-            const scrollPopup = async () => {
-                const popupHeight = await page.evaluate(() => {
-                    const popup = document.querySelector('.review-dialog');
-                    const height = popup.scrollHeight;
-                    return height;
-                });
-        
-                // Ajustez la valeur de scrollBy en fonction de votre cas
-                await page.evaluate(scrollHeight => {
-                    window.scrollBy(0, scrollHeight);
-                }, popupHeight);
-        
-                // Attendez un certain temps pour que la popup charge les nouveaux avis
-                await page.waitForTimeout(2000);
-        
-                // Vous pouvez ajouter une logique pour vérifier s'il y a de nouveaux avis ou non
-                // Par exemple, vous pouvez comparer le nombre d'avis avant et après le défilement
+            await page.waitForTimeout(1500);
+
+            const scrollAndCheckReviews = async () => {
+
+                await page.$eval(`.review-dialog-list`,
+                    e => {
+                    e.scrollTop = e.scrollTop + 5000;
+                    return e
+                    }
+                )
+
+                await page.waitForTimeout(500);
+
+                const googleReviewElements = await page.$$('.gws-localreviews__google-review');
+
+                const reviewsCount = googleReviewElements.length;
+                const result = reviewsCount !== numberOfReviews;
+
+                numberOfReviews = reviewsCount;
+
+                return result;
             };
-        
-            // Faites défiler la popup jusqu'à ce qu'il n'y ait plus de nouveaux avis (ajustez si nécessaire)
-            while (true) {
-                await scrollPopup();
-            }
-        
+
+            do {
+                const hasChanged = await scrollAndCheckReviews();
+
+                if (hasChanged) {
+                    console.log("Le bloc de reviews a changé. Continuation du défilement...");
+                } else {
+                    console.log("Aucun changement dans le bloc de reviews. Arrêt du défilement.");
+
+                    const moreButtons = await page.$$('.review-more-link');
+                    for (const button of moreButtons) {
+                        try {
+                            await button.click();
+                        } catch (error) {}
+                    }
+
+                    const googleReviewElements = await page.$$('.gws-localreviews__google-review');
+
+                    const reviewsList = [];
+
+                    for (const reviewElement of googleReviewElements) {
+                        const reviewData = await reviewElement.evaluate(element => {
+
+                            let text = "";
+
+                            const reviewTextZone = element.querySelector('.review-full-text');
+
+                            if(reviewTextZone) {
+                                text = reviewTextZone.innerText;
+                            } else {
+                                const expandableSection = element.querySelector('[data-expandable-section]');
+                                if(expandableSection) {
+                                    text = expandableSection.innerText;
+                                }
+                            }
+                
+                            return {
+                                text
+                            };
+                        });
+
+                        if(reviewData.text === "") {
+                            continue;
+                        }
+                
+                        reviewsList.push(reviewData);
+                    }
+                    const end = performance.now();
+
+                    console.log(`Time taken to execute add function is ${end - start}ms.`);
+                
+                    let jsonResult = JSON.stringify(reviewsList, null, 2);
+                    fs.writeFileSync('resultat_reviews.json', jsonResult);
+                    await browser.close();
+
+                    break;
+                }
+            } while (true);
+
             console.log("Fin du défilement. Tous les avis ont été chargés.");
 
         } else {
@@ -56,28 +114,5 @@ const fs = require('fs');
     } else {
         console.log("Aucun bouton 'Tout accepter' trouvé sur la page.");
     }
-
-    await page.waitForSelector('SELECTEUR_DU_BOUTON');
-
-    // Cliquez sur le bouton
-    await page.click('SELECTEUR_DU_BOUTON');
-
-    // Attendez que la page soit chargée ou que des éléments spécifiques soient modifiés
-    await page.waitForNavigation();
-
-    // let source = await page.content();
-    // const $ = cheerio.load(source);
-    // fs.writeFileSync('output.html', source, 'utf-8');
-    // //const extractedDiv = $(`#${divIdToExtract}`);
-    // console.log(source.includes("gws-localreviews__general-reviews-block"));
-    // const elements = await page.$('.gws-localreviews__general-reviews-block');
-    // console.log(elements);
-    // for (const element of elements) {
-    //     const title = await element.$eval('h3', node => node.innerText);
-    //     const link = await element.$eval('a', node => node.getAttribute('href'));
-    //     console.log('Title:', title);
-    //     console.log('Link:', link);
-    //     console.log('');
-    // }
     await browser.close();
 })();
