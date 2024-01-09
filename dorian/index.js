@@ -2,15 +2,43 @@ const puppeteer = require('puppeteer');
 const cheerio = require('cheerio');
 const fs = require('fs');
 
+
+async function categorizeReview(reviewText) {
+    for (const category in keywords) {
+        const categoryKeywords = keywords[category];
+        if (categoryKeywords.some(keyword => reviewText.toLowerCase().includes(keyword))) {
+            return category;
+        }
+    }
+    return "uncategorized";
+}
+
 (async () => {
 
     let numberOfReviews = 0;
     const start = performance.now();
 
-    const browser = await puppeteer.launch({ headless: false });
+    const browser = await puppeteer.launch({ headless: false, args: ['--lang="en-US"'] });
     const page = await browser.newPage();
 
-    await page.goto('https://www.google.com/search?q=le+poulet+à+3+pattes+pau');
+    await page.setExtraHTTPHeaders({
+        'Accept-Language': 'en'
+    });
+
+    await page.evaluateOnNewDocument(() => {
+        Object.defineProperty(navigator, "language", {
+            get: function() {
+                return "en-GB";
+            }
+        });
+        Object.defineProperty(navigator, "languages", {
+            get: function() {
+                return ["en-GB", "en"];
+            }
+        });
+    });
+
+    await page.goto('https://www.google.com/search?q=DK+Restaurant+NYC');
 
     const acceptButton = await page.$x("//button[contains(., 'Tout accepter')]");
 
@@ -67,7 +95,7 @@ const fs = require('fs');
                     const reviewsList = [];
 
                     for (const reviewElement of googleReviewElements) {
-                        const reviewData = await reviewElement.evaluate(element => {
+                        const reviewData = await reviewElement.evaluate(async element => {
 
                             let text = "";
 
@@ -81,9 +109,12 @@ const fs = require('fs');
                                     text = expandableSection.innerText;
                                 }
                             }
+
+                            const category = await categorizeReview(reviewText);
                 
                             return {
-                                text
+                                text,
+                                category
                             };
                         });
 
