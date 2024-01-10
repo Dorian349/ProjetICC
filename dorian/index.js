@@ -16,19 +16,19 @@ console.log(lang);
     const browser = await puppeteer.launch({ headless: false });
     const page = await browser.newPage();
 
-    await page.goto('https://www.google.com/search?q=DK+Restaurant+NYC');
+    await page.goto('https://www.google.com/search?hl=en&q=mcdo+new+york+160+broadway');
 
-    const acceptButton = await page.$x("//button[contains(., 'Tout accepter')]");
+    const acceptButton = await page.$x("//button[contains(., 'Accept all')]");
 
     if (acceptButton.length > 0) {
         await acceptButton[0].click();
-        console.log("Bouton 'Tout accepter' cliqué avec succès.");
+        console.log("Bouton 'Accept All' cliqué avec succès.");
 
-        const googleReviewsLink = await page.$x("//a[contains(., 'avis Google')]");
+        const googleReviewsLink = await page.$x("//a[contains(., 'Google reviews')]");
 
         if (googleReviewsLink.length > 0) {
             await googleReviewsLink[0].click();
-            console.log("Lien 'avis Google' cliqué avec succès.");
+            console.log("Lien 'Google reviews' cliqué avec succès.");
 
             await page.waitForTimeout(1500);
 
@@ -41,7 +41,11 @@ console.log(lang);
                     }
                 )
 
-                await page.waitForTimeout(500);
+                await page.waitForFunction(() => {
+                    const loaderElement = document.querySelector('.Opirzb.yf.yl');
+                    return !loaderElement; // Le chargement est terminé lorsque cet élément n'existe pas
+                }, { polling: 'mutation' });
+                await page.waitForTimeout(750);
 
                 const googleReviewElements = await page.$$('.gws-localreviews__google-review');
 
@@ -50,24 +54,18 @@ console.log(lang);
 
                 numberOfReviews = reviewsCount;
 
+                console.log(`Nombre d'avis collectés : ${numberOfReviews}`)
+
                 return result;
             };
 
             do {
                 const hasChanged = await scrollAndCheckReviews();
 
-                if (hasChanged) {
+                if (hasChanged || numberOfReviews >= 1500) {
                     console.log("Le bloc de reviews a changé. Continuation du défilement...");
                 } else {
                     console.log("Aucun changement dans le bloc de reviews. Arrêt du défilement.");
-
-
-                    const moreButtons2 = await page.$$('.xfQgXd');
-                    for (const button of moreButtons2) {
-                        try {
-                            await button.click();
-                        } catch (error) {}
-                    }
 
                     const moreButtons = await page.$$('.review-more-link');
                     for (const button of moreButtons) {
@@ -79,6 +77,7 @@ console.log(lang);
                     const googleReviewElements = await page.$$('.gws-localreviews__google-review');
 
                     const reviewsList = [];
+                    const allReviews = [];
 
                     for (const reviewElement of googleReviewElements) {
                         const reviewData = await reviewElement.evaluate(async element => {
@@ -150,7 +149,11 @@ console.log(lang);
                                     "social injustice",
                                     "cultural diversity",
                                     "consumer education",
-                                    "cultural"
+                                    "cultural",
+                                    "beggars",
+                                    "homeless",
+                                    "drug deal",
+                                    "drugs deal"
                                 ],
                                 "governance": [
                                     "ethical",
@@ -160,8 +163,7 @@ console.log(lang);
                                     "lobbying",
                                     "fair competition",
                                     "transparent reporting",
-                                    "business innovation",
-                                    ""
+                                    "business innovation"
                                 ],
                                 "waste": [
                                     "packaging",
@@ -188,6 +190,14 @@ console.log(lang);
                                     "labels",
                                     "corporate",
                                     "insincere"
+                                ],
+                                "collector": [
+                                    "nature",
+                                    "ecological",
+                                    "ecologic",
+                                    "ecology",
+                                    "environment",
+                                    "environmental"
                                 ]
                             }
 
@@ -206,7 +216,9 @@ console.log(lang);
                             };
                         });
 
-                        if(reviewData.text === "") {
+                        allReviews.push(reviewData);
+
+                        if(reviewData.text === "" || reviewData.category === "uncategorized") {
                             continue;
                         }
                 
@@ -215,10 +227,14 @@ console.log(lang);
                     const end = performance.now();
 
                     console.log(`Time taken to execute add function is ${end - start}ms.`);
+                    
+                    await browser.close();
                 
                     let jsonResult = JSON.stringify(reviewsList, null, 2);
                     fs.writeFileSync('resultat_reviews.json', jsonResult);
-                    await browser.close();
+
+                    let jsonResult2 = JSON.stringify(allReviews, null, 2);
+                    fs.writeFileSync('all_reviews.json', jsonResult2);
 
                     break;
                 }
