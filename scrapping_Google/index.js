@@ -13,7 +13,7 @@ console.log(lang);
     let numberOfReviews = 0;
     const start = performance.now();
 
-    const browser = await puppeteer.launch({ headless: true });
+    const browser = await puppeteer.launch({ headless: false });
     const page = await browser.newPage();
 
     await page.goto('https://www.google.com/search?hl=en&q=mcdo+new+york+160+broadway');
@@ -62,7 +62,7 @@ console.log(lang);
             do {
                 const hasChanged = await scrollAndCheckReviews();
 
-                if (hasChanged && numberOfReviews <= 1500) {
+                if (hasChanged && numberOfReviews <= 150) {
                     console.log("Le bloc de reviews a changé. Continuation du défilement...");
                 } else {
                     console.log("Aucun changement dans le bloc de reviews. Arrêt du défilement.");
