@@ -35,7 +35,7 @@ async function scrapeTripAdvisorReviewsBySearch(query) {
         await page.waitForTimeout(2000);
         console.log('Attente de 2 secondes après le clic');
         console.log('Clic sur le premier lien avec succès.');
-        // ... (suite du code)
+
         //Part PopUp Cookie
         // Attente du sélecteur du bouton "J'accepte" pour les cookies
         await page.waitForSelector('#onetrust-accept-btn-handler');
@@ -109,8 +109,6 @@ async function scrapeTripAdvisorReviewsBySearch(query) {
         console.error('Une erreur est survenue lors du clic:', error);
       }
       
-      // Appeler la fonction de récupération des avis sur TripAdvisor
-      // const reviews = await scrapeTripAdvisorReviews(page.url());
 
       await browser.close();
       console.log('Fermeture du navigateur.', reviews.length, 'avis récupérés.');
