@@ -1,6 +1,8 @@
 {
     "organic": [
         "pesticide",
+        "antibiotic",
+        "health conscious",
         "herbicide",
         "toxic",
         "non-toxic",
@@ -15,6 +17,11 @@
         "biodiversity-friendly"
     ],
     "climate": [
+        "vegan",
+        "renewable",
+        "low energy",
+        "local",
+        "compost",
         "plant-based",
         "eco-conscious",
         "wildlife-friendly",
@@ -28,7 +35,8 @@
         "forestry"
     ],
     "water": [
-        "water",
+        "water waste",
+        "water pollution",
         "water quality",
         "water efficiency",
         "rainwater",
@@ -49,6 +57,8 @@
         "fair labor",
         "social justice",
         "social injustice",
+        "socially responsible",
+        "socially conscious",
         "cultural diversity",
         "consumer education",
         "cultural"
@@ -75,7 +85,9 @@
         "green practices",
         "sustainable packaging",
         "waste auditing",
-        "environmental policy"
+        "environmental policy",
+        "recycled",
+        "sustainable"
     ],
     "adverse": [
         "greenwashing",

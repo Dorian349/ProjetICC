@@ -1,0 +1,35 @@
+<div class="main_div">
+  <fieldset>
+    <legend>Filter</legend>
+    <label>
+      <input type="checkbox" (change)="applyFilter('organic')"> Organic
+    </label>
+    <label>
+      <input type="checkbox" (change)="applyFilter('climate')"> Climate
+    </label>
+    <label>
+      <input type="checkbox" (change)="applyFilter('water')"> Water
+    </label>
+    <label>
+      <input type="checkbox" (change)="applyFilter('social')"> Social
+    </label>
+    <label>
+      <input type="checkbox" (change)="applyFilter('governance')"> Governance
+    </label>
+    <label>
+      <input type="checkbox" (change)="applyFilter('waste')"> Waste
+    </label>
+    <label>
+      <input type="checkbox" (change)="applyFilter('adverse')"> Adverse
+    </label>
+    <br>
+    <label>
+      <form (ngSubmit)="getCityCoord()">
+        <label>Find City : </label>
+        <input type="text" [(ngModel)]="city" name="city">
+        <button type="submit">Search</button>
+      </form>
+    </label>
+  </fieldset>
+  <div id="map" ></div>
+</div>
